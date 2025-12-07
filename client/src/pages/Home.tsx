@@ -8,6 +8,7 @@ import { Cart } from "@/components/Cart"
 import { CheckoutDialog } from "@/components/CheckoutDialog"
 import { LoadingScreen } from "@/components/LoadingScreen"
 import { useToast } from "@/hooks/use-toast"
+import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
@@ -19,6 +20,7 @@ export default function Home() {
   const [checkingSeatId, setCheckingSeatId] = useState<string | null>(null)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [userId, setUserId] = useState<string>("")
+  const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false) // Track minimum loading time
 
   useEffect(() => {
     let storedId = localStorage.getItem("cinema_user_id")
@@ -34,11 +36,18 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    const timer = setTimeout(() => setMinLoadingTimeElapsed(true), 2000)
+    return () => clearTimeout(timer)
+  }, [])
+
   const { data: seats = [], isLoading } = useQuery({
     queryKey: ["seats"],
     queryFn: api.getSeats,
     refetchInterval: 5000, // Poll every 5 seconds
   })
+
+  const shouldShowLoading = isLoading || !minLoadingTimeElapsed
 
   const mySelectedSeats = seats.filter((s) => s.held_by === userId)
   const mySelectedSeatIds = mySelectedSeats.map((s) => s.id)
@@ -137,9 +146,15 @@ export default function Home() {
       </header>
 
       <main className="flex-1 relative bg-black/50">
-        {isLoading ? (
-          <LoadingScreen />
-        ) : (
+        <AnimatePresence>
+          {shouldShowLoading && (
+            <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+              <LoadingScreen />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!shouldShowLoading && (
           <CinemaHall
             seats={seats}
             selectedSeats={mySelectedSeatIds}
