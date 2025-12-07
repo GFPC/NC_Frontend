@@ -121,36 +121,20 @@ export default function Home() {
   return (
     <div className="fixed inset-0 bg-background overflow-hidden flex flex-col">
      <header className="z-40 bg-background/80 backdrop-blur-md border-b border-white/5 shrink-0">
-  <div className="container mx-auto px-4 h-16">
-    <div className="grid grid-cols-3 items-center h-full">
-      {/* Логотип слева */}
-      <div className="flex items-center gap-2 justify-start">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-bold text-white shadow-[0_0_15px_-3px_hsl(var(--primary))]">
-          N
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-bold text-white shadow-[0_0_15px_-3px_hsl(var(--primary))]">
+              N
+            </div>
+            <h1 className="font-display font-bold text-xl tracking-wider text-white">
+              NEON <span className="text-primary">CINEMA</span>
+            </h1>
+          </div>
+          <div className="text-xs text-muted-foreground font-mono hidden sm:block">
+            ID: {userId}
+          </div>
         </div>
-        <h1 className="font-display font-bold text-xl tracking-wider text-white">
-          NEON <span className="text-primary">CINEMA</span>
-        </h1>
-      </div>
-      
-      {/* Надпись по центру */}
-      <div className="flex justify-center">
-        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10">
-          <span className="text-xs text-muted-foreground font-mono tracking-wider">
-            by <span className="text-primary/80">Greg Feov</span>
-          </span>
-        </div>
-      </div>
-      
-      {/* ID пользователя справа */}
-      <div className="flex justify-end">
-        <div className="text-xs text-muted-foreground font-mono hidden sm:block">
-          ID: {userId}
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
+      </header>
 
       <main className="flex-1 relative bg-black/50">
         {isLoading ? (
