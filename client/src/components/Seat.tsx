@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Seat as SeatType } from "@/lib/mockApi";
+import { Seat as SeatType } from "@/lib/api";
 import { motion } from "framer-motion";
 import {
   Popover,
@@ -24,7 +24,7 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
   // Status Colors
   const statusColor = {
     available: seat.type === 'vip' ? 'text-purple-400 hover:text-purple-300' : 'text-slate-400 hover:text-slate-200',
-    occupied: 'text-red-900', // No cursor-not-allowed here because we want to click it to see who took it
+    occupied: 'text-red-900',
     selected: 'text-primary animate-pulse',
   };
 
@@ -35,9 +35,8 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
   };
 
   const handleClick = () => {
-    // Always open popover, even if occupied
     if (isSelected) {
-      onSelect(seat); // Deselect (release)
+      onSelect(seat);
       setIsOpen(false);
     } else {
       setIsOpen(true);
@@ -49,7 +48,7 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
     setIsOpen(false);
   };
 
-  const isOccupied = seat.status === 'occupied' && !isSelected; // Visual state
+  const isOccupied = seat.status === 'occupied' && !isSelected;
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -72,7 +71,6 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
             <Armchair className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
           )}
           
-          {/* Seat Number (Tiny) */}
           <span className="absolute -bottom-4 text-[9px] text-muted-foreground/50 font-mono">
             {seat.row}-{seat.col}
           </span>
@@ -87,7 +85,7 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
           
           {isOccupied ? (
              <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
-               Taken by <span className="font-bold">{seat.occupiedBy || 'Anonymous'}</span>
+               Taken by <span className="font-bold">{seat.occupied_by || 'Another User'}</span>
              </div>
           ) : (
             <>
@@ -100,6 +98,7 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
                 className="w-full mt-2 font-bold tracking-wide" 
                 onClick={handleAddToCart}
                 disabled={isChecking}
+                data-testid={`button-add-seat-${seat.id}`}
               >
                 ADD TO CART
               </Button>

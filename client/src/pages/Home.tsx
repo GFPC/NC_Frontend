@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, Seat as SeatType } from "@/lib/mockApi";
+import { api, Seat as SeatType } from "@/lib/api";
 import { CinemaHall } from "@/components/CinemaHall";
 import { Cart } from "@/components/Cart";
 import { CheckoutDialog } from "@/components/CheckoutDialog";
@@ -8,19 +8,16 @@ import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import { Loader2 } from "lucide-react";
 
-// Simple ID generator
 const generateId = () => Math.random().toString(36).substring(2, 15);
 
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // State
   const [checkingSeatId, setCheckingSeatId] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [userId, setUserId] = useState<string>("");
 
-  // Initialize User ID
   useEffect(() => {
     let storedId = localStorage.getItem('cinema_user_id');
     if (!storedId) {
@@ -29,25 +26,21 @@ export default function Home() {
     }
     setUserId(storedId);
     
-    // Prevent body scroll on mobile
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'auto';
     };
   }, []);
 
-  // Fetch Seats (Poll every 2 seconds for faster updates)
   const { data: seats = [], isLoading } = useQuery({
     queryKey: ['seats'],
     queryFn: api.getSeats,
-    refetchInterval: 2000,
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
-  // Calculate my selected seats from the server state
-  const mySelectedSeats = seats.filter(s => s.heldBy === userId);
+  const mySelectedSeats = seats.filter(s => s.held_by === userId);
   const mySelectedSeatIds = mySelectedSeats.map(s => s.id);
 
-  // Reserve Seat Mutation
   const reserveMutation = useMutation({
     mutationFn: (seatId: string) => api.reserveSeat(seatId, userId),
     onSuccess: (data) => {
@@ -66,7 +59,6 @@ export default function Home() {
     onSettled: () => setCheckingSeatId(null)
   });
 
-  // Release Seat Mutation
   const releaseMutation = useMutation({
     mutationFn: (seatId: string) => api.releaseSeat(seatId, userId),
     onSuccess: () => {
@@ -75,7 +67,6 @@ export default function Home() {
     onSettled: () => setCheckingSeatId(null)
   });
 
-  // Booking Mutation (Finalize)
   const bookMutation = useMutation({
     mutationFn: api.bookSeats,
     onSuccess: (data) => {
@@ -106,19 +97,15 @@ export default function Home() {
     }
   });
 
-  // Handlers
   const handleToggleSeat = async (seat: SeatType) => {
-    // If held by me -> Release it
-    if (seat.heldBy === userId) {
+    if (seat.held_by === userId) {
       setCheckingSeatId(seat.id);
       releaseMutation.mutate(seat.id);
       return;
     }
 
-    // If occupied -> Do nothing (visual feedback handled in component)
     if (seat.status === 'occupied') return;
 
-    // If available -> Reserve it
     setCheckingSeatId(seat.id);
     reserveMutation.mutate(seat.id);
   };
@@ -133,7 +120,6 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-background overflow-hidden flex flex-col">
-      {/* Header */}
       <header className="z-40 bg-background/80 backdrop-blur-md border-b border-white/5 shrink-0">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -150,7 +136,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content Area (Scrollable/Pannable) */}
       <main className="flex-1 relative bg-black/50">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
@@ -167,7 +152,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Cart & Checkout */}
       <div className="shrink-0 z-50">
         <Cart 
           selectedSeats={mySelectedSeats}
