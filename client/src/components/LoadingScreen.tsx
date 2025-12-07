@@ -6,11 +6,11 @@ export function LoadingScreen() {
   const letters = "Developed By Greg Feov".split("")
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-black via-black to-slate-900 flex items-center justify-center z-50">
-      {/* Animated background elements */}
+    <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+      {/* Animated bright background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl"
           animate={{
             x: [0, 100, 0],
             y: [0, -50, 0],
@@ -23,7 +23,7 @@ export function LoadingScreen() {
           style={{ top: "10%", left: "5%" }}
         />
         <motion.div
-          className="absolute w-96 h-96 bg-pink-500/5 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-white/3 rounded-full blur-3xl"
           animate={{
             x: [0, -100, 0],
             y: [0, 50, 0],
@@ -41,12 +41,12 @@ export function LoadingScreen() {
       <div className="relative z-10 text-center px-4">
         <div className="mb-12">
           <motion.div
-            className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-lg flex items-center justify-center mx-auto font-display font-bold text-white text-2xl sm:text-3xl shadow-[0_0_30px_-3px_hsl(var(--primary))]"
+            className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-lg flex items-center justify-center mx-auto font-display font-bold text-black text-2xl sm:text-3xl shadow-[0_0_40px_10px_rgba(255,255,255,0.5)]"
             animate={{
               boxShadow: [
-                "0 0 20px -3px hsl(var(--primary))",
-                "0 0 40px 3px hsl(var(--primary))",
-                "0 0 20px -3px hsl(var(--primary))",
+                "0 0 30px 5px rgba(255,255,255,0.4)",
+                "0 0 60px 15px rgba(255,255,255,0.6)",
+                "0 0 30px 5px rgba(255,255,255,0.4)",
               ],
             }}
             transition={{
@@ -63,16 +63,10 @@ export function LoadingScreen() {
             {letters.map((letter, i) => (
               <motion.span
                 key={i}
-                className="text-2xl sm:text-3xl font-display font-bold"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed 0%, #db2777 50%, #00f0ff 100%)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
+                className="text-2xl sm:text-3xl font-display font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]"
                 animate={{
                   y: [0, -10, 0],
-                  opacity: [0.5, 1, 0.5],
+                  opacity: [0.7, 1, 0.7],
                 }}
                 transition={{
                   duration: 1.5,
@@ -91,7 +85,7 @@ export function LoadingScreen() {
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 bg-primary rounded-full"
+              className="w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
               animate={{
                 opacity: [0.3, 1, 0.3],
               }}
