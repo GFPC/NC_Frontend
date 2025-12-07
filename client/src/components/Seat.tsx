@@ -14,9 +14,10 @@ interface SeatProps {
   isHeldByOthers: boolean
   onSelect: (seat: SeatType) => void
   isChecking: boolean
+  userId: string
 }
 
-export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }: SeatProps) {
+export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, userId }: SeatProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const statusColor = {
@@ -46,19 +47,19 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
     setIsOpen(false)
   }
 
-  const isOccupied = seat.status === "occupied" && !isSelected
+  const isOccupiedByOthers = seat.status === "occupied" && seat.held_by !== userId
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <motion.button
-          whileHover={!isOccupied ? { scale: 1.1 } : {}}
-          whileTap={!isOccupied ? { scale: 0.95 } : {}}
+          whileHover={!isOccupiedByOthers ? { scale: 1.1 } : {}}
+          whileTap={!isOccupiedByOthers ? { scale: 0.95 } : {}}
           onClick={handleClick}
           className={cn(
             "relative w-8 h-8 sm:w-10 sm:h-10 rounded-t-lg rounded-b-sm flex items-center justify-center transition-all duration-300 border",
-            isSelected ? statusColor.selected : isOccupied ? statusColor.occupied : statusColor.available,
-            isSelected ? bgStatus.selected : isOccupied ? bgStatus.occupied : bgStatus.available,
+            isSelected ? statusColor.selected : isOccupiedByOthers ? statusColor.occupied : statusColor.available,
+            isSelected ? bgStatus.selected : isOccupiedByOthers ? bgStatus.occupied : bgStatus.available,
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
           )}
           data-testid={`seat-${seat.id}`}
@@ -81,7 +82,7 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
             Row {seat.row} <span className="text-muted-foreground text-xs font-sans font-normal">Seat {seat.col}</span>
           </h4>
 
-          {isOccupied ? (
+          {isOccupiedByOthers ? (
             <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
               Purchased by <span className="font-bold">{seat.occupied_by || "Another User"}</span>
             </div>
