@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 import { Loader2 } from "lucide-react";
 
-// Simple ID generator since we can't install new packages mid-stream easily if not essential
+// Simple ID generator
 const generateId = () => Math.random().toString(36).substring(2, 15);
 
 export default function Home() {
@@ -16,7 +16,6 @@ export default function Home() {
   const queryClient = useQueryClient();
   
   // State
-  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>([]);
   const [checkingSeatId, setCheckingSeatId] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [userId, setUserId] = useState<string>("");
@@ -29,21 +28,58 @@ export default function Home() {
       localStorage.setItem('cinema_user_id', storedId);
     }
     setUserId(storedId);
+    
+    // Prevent body scroll on mobile
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, []);
 
-  // Fetch Seats (Poll every 5 seconds)
+  // Fetch Seats (Poll every 2 seconds for faster updates)
   const { data: seats = [], isLoading } = useQuery({
     queryKey: ['seats'],
     queryFn: api.getSeats,
-    refetchInterval: 5000,
+    refetchInterval: 2000,
   });
 
-  // Booking Mutation
+  // Calculate my selected seats from the server state
+  const mySelectedSeats = seats.filter(s => s.heldBy === userId);
+  const mySelectedSeatIds = mySelectedSeats.map(s => s.id);
+
+  // Reserve Seat Mutation
+  const reserveMutation = useMutation({
+    mutationFn: (seatId: string) => api.reserveSeat(seatId, userId),
+    onSuccess: (data) => {
+      if (!data.success) {
+        toast({
+          title: "Unavailable",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ['seats'] });
+    },
+    onError: () => {
+       toast({ title: "Error", description: "Failed to reserve seat", variant: "destructive" });
+    },
+    onSettled: () => setCheckingSeatId(null)
+  });
+
+  // Release Seat Mutation
+  const releaseMutation = useMutation({
+    mutationFn: (seatId: string) => api.releaseSeat(seatId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seats'] });
+    },
+    onSettled: () => setCheckingSeatId(null)
+  });
+
+  // Booking Mutation (Finalize)
   const bookMutation = useMutation({
     mutationFn: api.bookSeats,
     onSuccess: (data) => {
       if (data.success) {
-        // Success Effect
         confetti({
           particleCount: 100,
           spread: 70,
@@ -58,7 +94,6 @@ export default function Home() {
           className: "bg-green-900 border-green-800 text-white"
         });
         
-        setSelectedSeatIds([]);
         setIsCheckoutOpen(false);
         queryClient.invalidateQueries({ queryKey: ['seats'] });
       } else {
@@ -68,64 +103,38 @@ export default function Home() {
           variant: "destructive",
         });
       }
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
     }
   });
 
   // Handlers
   const handleToggleSeat = async (seat: SeatType) => {
-    // If already selected, remove it
-    if (selectedSeatIds.includes(seat.id)) {
-      setSelectedSeatIds(prev => prev.filter(id => id !== seat.id));
+    // If held by me -> Release it
+    if (seat.heldBy === userId) {
+      setCheckingSeatId(seat.id);
+      releaseMutation.mutate(seat.id);
       return;
     }
 
-    // Check availability before adding
+    // If occupied -> Do nothing (visual feedback handled in component)
+    if (seat.status === 'occupied') return;
+
+    // If available -> Reserve it
     setCheckingSeatId(seat.id);
-    try {
-      const isAvailable = await api.checkAvailability(seat.id);
-      if (isAvailable) {
-        setSelectedSeatIds(prev => [...prev, seat.id]);
-      } else {
-        toast({
-          title: "Seat Unavailable",
-          description: "This seat was just taken by someone else.",
-          variant: "destructive",
-        });
-        // Refresh data
-        queryClient.invalidateQueries({ queryKey: ['seats'] });
-      }
-    } catch (error) {
-      toast({
-        title: "Network Error",
-        description: "Could not verify seat availability.",
-        variant: "destructive",
-      });
-    } finally {
-      setCheckingSeatId(null);
-    }
+    reserveMutation.mutate(seat.id);
   };
 
   const handleCheckout = (name: string) => {
     bookMutation.mutate({
       userId,
-      seatIds: selectedSeatIds,
+      seatIds: mySelectedSeatIds,
       name
     });
   };
 
-  const selectedSeats = seats.filter(s => selectedSeatIds.includes(s.id));
-
   return (
-    <div className="min-h-screen bg-background pb-32 overflow-hidden">
+    <div className="fixed inset-0 bg-background overflow-hidden flex flex-col">
       {/* Header */}
-      <header className="fixed top-0 w-full z-40 bg-background/80 backdrop-blur-md border-b border-white/5">
+      <header className="z-40 bg-background/80 backdrop-blur-md border-b border-white/5 shrink-0">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-display font-bold text-white shadow-[0_0_15px_-3px_hsl(var(--primary))]">
@@ -141,44 +150,38 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 pt-24">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight">
-            Select Your Seats
-          </h2>
-          <p className="text-muted-foreground">
-            Tap on available seats to add them to your cart.
-          </p>
-        </div>
-
+      {/* Main Content Area (Scrollable/Pannable) */}
+      <main className="flex-1 relative bg-black/50">
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex justify-center items-center h-full">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
           </div>
         ) : (
           <CinemaHall 
             seats={seats} 
-            selectedSeats={selectedSeatIds} 
+            selectedSeats={mySelectedSeatIds} 
             onToggleSeat={handleToggleSeat}
             checkingSeatId={checkingSeatId}
+            userId={userId}
           />
         )}
       </main>
 
       {/* Cart & Checkout */}
-      <Cart 
-        selectedSeats={selectedSeats}
-        onRemove={(id) => setSelectedSeatIds(prev => prev.filter(s => s !== id))}
-        onCheckout={() => setIsCheckoutOpen(true)}
-      />
+      <div className="shrink-0 z-50">
+        <Cart 
+          selectedSeats={mySelectedSeats}
+          onRemove={(id) => releaseMutation.mutate(id)}
+          onCheckout={() => setIsCheckoutOpen(true)}
+        />
+      </div>
 
       <CheckoutDialog 
         open={isCheckoutOpen}
         onOpenChange={setIsCheckoutOpen}
         onSubmit={handleCheckout}
         isProcessing={bookMutation.isPending}
-        totalAmount={selectedSeats.reduce((sum, s) => sum + s.price, 0)}
+        totalAmount={mySelectedSeats.reduce((sum, s) => sum + s.price, 0)}
       />
     </div>
   );

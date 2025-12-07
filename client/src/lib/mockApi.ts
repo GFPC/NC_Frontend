@@ -8,6 +8,8 @@ export interface Seat {
   price: number;
   status: 'available' | 'occupied';
   type: 'standard' | 'vip';
+  occupiedBy?: string | null; // Name of the user who took it
+  heldBy?: string | null; // User ID holding it in cart
 }
 
 export interface BookingRequest {
@@ -33,8 +35,10 @@ const generateSeats = (): Seat[] => {
         row: r,
         col: c,
         price: isVip ? PRICE_VIP : PRICE_STANDARD,
-        status: Math.random() > 0.8 ? 'occupied' : 'available', // Random initial occupancy
+        status: 'available', // ALL FREE INITIALLY
         type: isVip ? 'vip' : 'standard',
+        occupiedBy: null,
+        heldBy: null
       });
     }
   }
@@ -51,40 +55,84 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const api = {
   // Get all seats
   getSeats: async (): Promise<Seat[]> => {
-    await delay(300); // Simulate network latency
-    // Randomly occupy a new seat occasionally to simulate live updates
-    if (Math.random() > 0.9) {
-       const availableSeats = serverSeats.filter(s => s.status === 'available');
-       if (availableSeats.length > 0) {
-         const randomSeat = availableSeats[Math.floor(Math.random() * availableSeats.length)];
-         randomSeat.status = 'occupied';
-       }
-    }
+    await delay(300); 
     return [...serverSeats];
   },
 
-  // Check specific seat availability
+  // Reserve a seat (Add to cart)
+  reserveSeat: async (seatId: string, userId: string): Promise<{ success: boolean; message: string }> => {
+    await delay(200);
+    const seatIndex = serverSeats.findIndex(s => s.id === seatId);
+    
+    if (seatIndex === -1) return { success: false, message: 'Seat not found' };
+    
+    const seat = serverSeats[seatIndex];
+
+    // Check if already taken or held by someone else
+    if (seat.status === 'occupied' || (seat.heldBy && seat.heldBy !== userId)) {
+      return { success: false, message: 'Seat is already taken' };
+    }
+
+    // Lock the seat
+    serverSeats[seatIndex] = {
+      ...seat,
+      status: 'occupied', // Visually occupied for others
+      heldBy: userId,
+      occupiedBy: null // Not fully booked yet, just held
+    };
+
+    return { success: true, message: 'Seat reserved' };
+  },
+
+  // Release a seat (Remove from cart)
+  releaseSeat: async (seatId: string, userId: string): Promise<{ success: boolean; message: string }> => {
+    await delay(200);
+    const seatIndex = serverSeats.findIndex(s => s.id === seatId);
+    
+    if (seatIndex === -1) return { success: false, message: 'Seat not found' };
+    
+    const seat = serverSeats[seatIndex];
+
+    // Only release if held by this user
+    if (seat.heldBy === userId) {
+       serverSeats[seatIndex] = {
+        ...seat,
+        status: 'available',
+        heldBy: null,
+        occupiedBy: null
+      };
+    }
+
+    return { success: true, message: 'Seat released' };
+  },
+
+  // Check specific seat availability (legacy check, still useful)
   checkAvailability: async (seatId: string): Promise<boolean> => {
     await delay(200);
     const seat = serverSeats.find(s => s.id === seatId);
     return seat ? seat.status === 'available' : false;
   },
 
-  // Book seats
+  // Book seats (Finalize)
   bookSeats: async (data: BookingRequest): Promise<{ success: boolean; message: string }> => {
     await delay(800);
     
-    // Verify all seats are still available
-    const requestedSeats = serverSeats.filter(s => data.seatIds.includes(s.id));
-    const allAvailable = requestedSeats.every(s => s.status === 'available');
+    // Verify user holds these seats
+    const userSeats = serverSeats.filter(s => data.seatIds.includes(s.id));
+    const allHeldByUser = userSeats.every(s => s.heldBy === data.userId);
 
-    if (!allAvailable) {
-      return { success: false, message: 'Some selected seats were just taken. Please refresh.' };
+    if (!allHeldByUser) {
+      return { success: false, message: 'Reservation expired or invalid.' };
     }
 
-    // Mark as occupied
+    // Finalize booking
     serverSeats = serverSeats.map(s => 
-      data.seatIds.includes(s.id) ? { ...s, status: 'occupied' } : s
+      data.seatIds.includes(s.id) ? { 
+        ...s, 
+        status: 'occupied', 
+        heldBy: null, // Clear hold
+        occupiedBy: data.name // Assign real name
+      } : s
     );
 
     return { success: true, message: 'Booking successful!' };
