@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { spawn } from "child_process";
 
 const app = express();
 const httpServer = createServer(app);
@@ -59,7 +60,56 @@ app.use((req, res, next) => {
   next();
 });
 
+// Start FastAPI backend as a child process
+let fastapiProcess: ReturnType<typeof spawn> | null = null;
+
+function startFastAPI() {
+  log("Starting FastAPI backend...", "fastapi");
+  
+  fastapiProcess = spawn("python3", ["-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"], {
+    stdio: "pipe",
+    detached: false,
+  });
+
+  fastapiProcess.stdout?.on("data", (data) => {
+    log(data.toString().trim(), "fastapi");
+  });
+
+  fastapiProcess.stderr?.on("data", (data) => {
+    log(data.toString().trim(), "fastapi");
+  });
+
+  fastapiProcess.on("error", (error) => {
+    log(`FastAPI error: ${error.message}`, "fastapi");
+  });
+
+  fastapiProcess.on("exit", (code) => {
+    log(`FastAPI exited with code ${code}`, "fastapi");
+  });
+}
+
+// Cleanup on exit
+process.on("SIGTERM", () => {
+  if (fastapiProcess) {
+    fastapiProcess.kill();
+  }
+  process.exit(0);
+});
+
+process.on("SIGINT", () => {
+  if (fastapiProcess) {
+    fastapiProcess.kill();
+  }
+  process.exit(0);
+});
+
 (async () => {
+  // Start FastAPI first
+  startFastAPI();
+  
+  // Wait a bit for FastAPI to initialize
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
