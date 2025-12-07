@@ -22,14 +22,14 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking }:
   const statusColor = {
     available: seat.type === "vip" ? "text-purple-400 hover:text-purple-300" : "text-slate-400 hover:text-slate-200",
     occupied: "text-emerald-400", // Purchased/occupied seats are now green
-    selected: "text-primary animate-pulse",
+    selected: "text-yellow-300 animate-pulse", // Changed from primary to yellow for "My" seats
   }
 
   const bgStatus = {
     available:
       seat.type === "vip" ? "bg-purple-900/20 hover:bg-purple-800/40" : "bg-slate-800/40 hover:bg-slate-700/60",
     occupied: "bg-emerald-900/30 border border-emerald-700/50", // Green for purchased seats
-    selected: "bg-primary/20 border-primary/50",
+    selected: "bg-yellow-500/30 border border-yellow-400/50", // Changed to yellow background
   }
 
   const handleClick = () => {
