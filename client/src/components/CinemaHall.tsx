@@ -19,7 +19,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
         Pinch to Zoom • Drag to Pan
       </div>
 
-      <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit limitToBounds={false}>
+      <TransformWrapper initialScale={0.75} minScale={0.5} maxScale={3} centerOnInit limitToBounds={false}>
         <TransformComponent
           wrapperClass="!w-full !h-full"
           contentClass="!w-full !h-full flex items-center justify-center"
