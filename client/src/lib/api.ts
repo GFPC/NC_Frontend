@@ -1,5 +1,3 @@
-// Real API client (replaces mockApi.ts)
-
 export interface Seat {
   id: string;
   row: number;
@@ -17,17 +15,19 @@ export interface BookingRequest {
   name: string;
 }
 
-const API_BASE = '/api';
+// Use environment variable or default to local proxy
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export const api = {
-  // Get all seats
   getSeats: async (): Promise<Seat[]> => {
     const response = await fetch(`${API_BASE}/seats`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch seats');
+    }
     const data = await response.json();
     return data.seats;
   },
 
-  // Reserve a seat
   reserveSeat: async (seatId: string, userId: string): Promise<{ success: boolean; message: string }> => {
     const formData = new URLSearchParams();
     formData.append('seat_id', seatId);
@@ -44,7 +44,6 @@ export const api = {
     return response.json();
   },
 
-  // Release a seat
   releaseSeat: async (seatId: string, userId: string): Promise<{ success: boolean; message: string }> => {
     const formData = new URLSearchParams();
     formData.append('seat_id', seatId);
@@ -61,7 +60,6 @@ export const api = {
     return response.json();
   },
 
-  // Book seats (finalize)
   bookSeats: async (data: BookingRequest): Promise<{ success: boolean; message: string }> => {
     const formData = new URLSearchParams();
     formData.append('user_id', data.userId);
