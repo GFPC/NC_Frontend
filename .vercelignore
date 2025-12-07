@@ -1,0 +1,12 @@
+backend
+server
+script
+shared
+*.md
+*.sh
+*.toml
+*.lock
+.replit
+main.py
+Procfile
+drizzle.config.ts
