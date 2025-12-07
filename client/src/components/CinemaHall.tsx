@@ -47,6 +47,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                       .map((seat) => {
                         const isHeldByMe = seat.held_by === userId
                         const isHeldByOthers = seat.status === "occupied" && !isHeldByMe
+                        const isVIP = seat.type === "VIP"
 
                         return (
                           <Seat
@@ -56,6 +57,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                             isHeldByOthers={isHeldByOthers}
                             onSelect={onToggleSeat}
                             isChecking={checkingSeatId === seat.id}
+                            isVIP={isVIP}
                           />
                         )
                       })}
@@ -70,7 +72,11 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
             <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:justify-center mt-12 sm:mt-16 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-slate-800/40 border border-slate-700"></div>
-                <span>Available</span>
+                <span>Available Regular</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-purple-900/30 border border-purple-700"></div>
+                <span>Available VIP</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-primary/20 border border-primary/50 animate-pulse"></div>
