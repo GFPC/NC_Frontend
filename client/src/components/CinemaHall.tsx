@@ -79,8 +79,8 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                 <span>Available VIP</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-primary/20 border border-primary/50 animate-pulse"></div>
-                <span>My</span>
+                <div className="w-4 h-4 rounded bg-yellow-500/30 border border-yellow-400/50 animate-pulse"></div>
+                <span>My Seats</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-emerald-900/30 border border-emerald-700/50"></div>
