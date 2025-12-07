@@ -56,7 +56,8 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                             isSelected={isHeldByMe}
                             isHeldByOthers={isHeldByOthers}
                             onSelect={onToggleSeat}
-                            isChecking={checkingSeatId === seat.id}
+                            checkingSeatId={checkingSeatId}
+                            userId={userId}
                             isVIP={isVIP}
                           />
                         )
