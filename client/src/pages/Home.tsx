@@ -60,7 +60,10 @@ export default function Home() {
   const mySelectedSeatIds = mySelectedSeats.map((s) => s.id)
 
   const reserveMutation = useMutation({
-    mutationFn: (seatId: string) => api.reserveSeat(seatId, userId),
+    mutationFn: (seatId: string) => {
+      const userName = localStorage.getItem("cinema_user_name") || "Unknown"
+      return api.reserveSeat(seatId, userId, userName)
+    },
     onSuccess: (data) => {
       if (!data.success) {
         toast({
