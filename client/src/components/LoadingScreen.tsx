@@ -38,10 +38,10 @@ export function LoadingScreen() {
       </div>
 
       {/* Loading content */}
-      <div className="relative z-10 text-center px-4">
-        <div className="mb-12">
+      <div className="relative z-10 text-center px-4 sm:px-8">
+        <div className="mb-8 sm:mb-12">
           <motion.div
-            className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-lg flex items-center justify-center mx-auto font-display font-bold text-black text-2xl sm:text-3xl shadow-[0_0_40px_10px_rgba(255,255,255,0.5)]"
+            className="w-12 h-12 sm:w-20 sm:h-20 bg-white rounded-lg flex items-center justify-center mx-auto font-display font-bold text-black text-xl sm:text-3xl shadow-[0_0_40px_10px_rgba(255,255,255,0.5)]"
             animate={{
               boxShadow: [
                 "0 0 30px 5px rgba(255,255,255,0.4)",
@@ -58,12 +58,12 @@ export function LoadingScreen() {
           </motion.div>
         </div>
 
-        <div className="h-16 flex items-center justify-center">
-          <div className="flex gap-1">
+        <div className="h-12 sm:h-16 flex items-center justify-center">
+          <div className="flex gap-0.5 sm:gap-1">
             {letters.map((letter, i) => (
               <motion.span
                 key={i}
-                className="text-2xl sm:text-3xl font-display font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]"
+                className="text-base sm:text-3xl font-display font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] tracking-tighter sm:tracking-normal"
                 animate={{
                   y: [0, -10, 0],
                   opacity: [0.7, 1, 0.7],
@@ -81,7 +81,7 @@ export function LoadingScreen() {
         </div>
 
         {/* Loading dots */}
-        <div className="mt-8 flex gap-1 justify-center">
+        <div className="mt-6 sm:mt-8 flex gap-1 justify-center">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
