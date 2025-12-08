@@ -10,6 +10,7 @@ import { LoadingScreen } from "@/components/LoadingScreen"
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
+import { NameDialog } from "@/components/NameDialog"
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
@@ -21,6 +22,7 @@ export default function Home() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [userId, setUserId] = useState<string>("")
   const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false) // Track minimum loading time
+  const [isNameDialogOpen, setIsNameDialogOpen] = useState(false) // Track if name dialog should show
 
   useEffect(() => {
     let storedId = localStorage.getItem("cinema_user_id")
@@ -29,6 +31,11 @@ export default function Home() {
       localStorage.setItem("cinema_user_id", storedId)
     }
     setUserId(storedId)
+
+    const storedName = localStorage.getItem("cinema_user_name")
+    if (!storedName) {
+      setIsNameDialogOpen(true)
+    }
 
     document.body.style.overflow = "hidden"
     return () => {
@@ -96,7 +103,7 @@ export default function Home() {
           title: "Booking Successful!",
           description: "Your tickets have been reserved.",
           variant: "default",
-          className: "bg-green-900 border-green-800 text-white",
+          className: "bg-green-900 border-green-800 text-white shadow-[0_0_15px_-3px_hsl(var(--primary))]",
         })
 
         setIsCheckoutOpen(false)
@@ -130,6 +137,11 @@ export default function Home() {
       seatIds: mySelectedSeatIds,
       name,
     })
+  }
+
+  const handleNameSubmit = (name: string) => {
+    localStorage.setItem("cinema_user_name", name)
+    setIsNameDialogOpen(false)
   }
 
   return (
@@ -183,6 +195,8 @@ export default function Home() {
         isProcessing={bookMutation.isPending}
         totalAmount={mySelectedSeats.reduce((sum, s) => sum + s.price, 0)}
       />
+
+      <NameDialog open={isNameDialogOpen} onSubmit={handleNameSubmit} />
     </div>
   )
 }
