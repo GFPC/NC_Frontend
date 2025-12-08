@@ -112,7 +112,7 @@ export function Seat({
                         styles.cursor,
                         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
                     )}
-                    disabled={!isAvailable}
+                    //disabled={!isAvailable}
                     data-testid={`seat-${seat.id}`}
                 >
                     {isChecking ? (
