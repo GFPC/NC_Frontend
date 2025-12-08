@@ -54,6 +54,8 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                         const isPurchased = seat.status === "occupied"
                         const isHeld = seat.status === "held"
 
+                        console.log(isInMyCart, isBookedByMe, isPurchased, isHeld)
+
                         return (
                             <Seat
                                 key={seat.id}
