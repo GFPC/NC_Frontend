@@ -36,7 +36,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
             <div className="p-4 sm:p-8 md:p-16 min-w-[280px] sm:min-w-[350px] md:min-w-[600px]">
               <div className="relative mb-8 sm:mb-12 md:mb-20">
                 <div className="h-16 w-full bg-gradient-to-b from-primary/20 to-transparent rounded-t-[50%] transform rotate-x-12 scale-x-90 screen-glow border-t border-primary/30" />
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 text-primary/40 text-sm tracking-[1em] font-display uppercase">
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 text-primary/100 text-sm tracking-[1em] font-display uppercase">
                   Screen
                 </div>
               </div>
