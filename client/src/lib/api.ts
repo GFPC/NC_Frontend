@@ -32,12 +32,12 @@ export const api = {
   reserveSeat: async (
     seatId: string,
     userId: string,
-    occupiedBy: string,
+    name: string,
   ): Promise<{ success: boolean; message: string }> => {
     const formData = new URLSearchParams()
     formData.append("seat_id", seatId)
     formData.append("user_id", userId)
-    formData.append("occupied_by", occupiedBy)
+    formData.append("name", name)
 
     const response = await fetch(`${API_BASE}/seats/reserve`, {
       method: "POST",
