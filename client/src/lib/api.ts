@@ -6,7 +6,8 @@ export interface Seat {
   status: "available" | "occupied"
   type: "standard" | "vip"
   occupied_by?: string | null
-  held_by?: string | null
+  held_by?: string | null,
+  name?: string | null
 }
 
 export interface BookingRequest {

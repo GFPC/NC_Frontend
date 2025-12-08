@@ -47,7 +47,9 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                     <div key={row} className="flex gap-1 sm:gap-2 md:gap-3 justify-center">
                       {seatsByRow[row].map((seat) => {
                         // Простая логика определения состояния
-                        const isMine = seat.held_by === userId
+                        const isInMyCart = seat.held_by === userId
+                        const isBookedByMe = seat.occupied_by === userId
+
                         const isPurchased = seat.status === "occupied"
                         const isHeld = seat.status === "held"
 
@@ -55,7 +57,8 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                             <Seat
                                 key={seat.id}
                                 seat={seat}
-                                isMine={isMine}
+                                isInMyCart={isInMyCart}
+                                isBookedByMe={isBookedByMe}
                                 isPurchased={isPurchased}
                                 isHeld={isHeld}
                                 onSelect={onToggleSeat}

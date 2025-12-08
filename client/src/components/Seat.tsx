@@ -10,7 +10,8 @@ import { useState } from "react"
 
 interface SeatProps {
     seat: SeatType
-    isMine: boolean // Удерживается мной (в корзине)
+    isInMyCart: boolean // Удерживается мной (в корзине)
+    isBookedByMe: boolean // Куплено мей
     isPurchased: boolean // Куплено (любым пользователем)
     isHeld: boolean // Удерживается (любым пользователем)
     onSelect: (seat: SeatType) => void
@@ -20,7 +21,8 @@ interface SeatProps {
 
 export function Seat({
                          seat,
-                         isMine,
+                         isInMyCart,
+                         isBookedByMe,
                          isPurchased,
                          isHeld,
                          onSelect,
@@ -32,8 +34,8 @@ export function Seat({
 
     // Определяем состояние места
     const getSeatState = () => {
-        if (isPurchased && isMine) return "purchased-by-me" // Куплено мной - зеленый
-        if (isMine) return "my-selection" // В моей корзине - желтый
+        if (isBookedByMe) return "purchased-by-me" // Куплено мной - зеленый
+        if (isInMyCart) return "my-selection" // В моей корзине - желтый
         if (isPurchased || isHeld) return "unavailable" // Куплено/забронировано другими - красный
         return isVIP ? "available-vip" : "available" // Доступно
     }
@@ -134,7 +136,7 @@ export function Seat({
 
                     {seatState === "unavailable" ? (
                         <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
-                            {isPurchased ? "Purchased" : "Temporarily reserved"}
+                            {isPurchased ? `Purchased by ${seat.name ? seat.name : "Someone"}` : `Temporarily reserved by ${seat.name ? seat.name : "Someone"}`}
                         </div>
                     ) : seatState === "purchased-by-me" ? (
                         <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
