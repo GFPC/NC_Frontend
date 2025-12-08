@@ -46,7 +46,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                       .sort((a, b) => a.col - b.col)
                       .map((seat) => {
                         const isHeldByMe = seat.held_by === userId
-                        const isHeldByOthers = seat.status === "occupied" && !isHeldByMe
+                        const isHeldByOthers = (seat.status === "occupied" || seat.status === "held") && !isHeldByMe
                         const isVIP = seat.type === "VIP"
 
                         return (
@@ -56,7 +56,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                             isSelected={isHeldByMe}
                             isHeldByOthers={isHeldByOthers}
                             onSelect={onToggleSeat}
-                            checkingSeatId={checkingSeatId}
+                            isChecking={checkingSeatId === seat.id}
                             userId={userId}
                             isVIP={isVIP}
                           />
@@ -86,6 +86,10 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-emerald-900/30 border border-emerald-700/50"></div>
                 <span>Purchased</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-red-900/30 border border-red-700/50"></div>
+                <span>Occupied</span>
               </div>
             </div>
           </div>
