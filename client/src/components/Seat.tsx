@@ -9,143 +9,174 @@ import { Loader2, Armchair } from "lucide-react"
 import { useState } from "react"
 
 interface SeatProps {
-  seat: SeatType
-  isSelected: boolean
-  isPurchased: boolean // Новый проп - куплено мной
-  isHeldByOthers: boolean // Удерживается другими (held)
-  isOccupiedByOthers: boolean // Куплено другими (occupied)
-  onSelect: (seat: SeatType) => void
-  checkingSeatId: string | null
-  userId: string
-  isVIP: boolean
+    seat: SeatType
+    isMine: boolean // Удерживается мной (в корзине)
+    isPurchased: boolean // Куплено (любым пользователем)
+    isHeld: boolean // Удерживается (любым пользователем)
+    onSelect: (seat: SeatType) => void
+    checkingSeatId: string | null
+    isVIP: boolean
 }
 
 export function Seat({
-                       seat,
-                       isSelected,
-                       isPurchased,
-                       isHeldByOthers,
-                       isOccupiedByOthers,
-                       onSelect,
-                       checkingSeatId,
-                       userId,
-                       isVIP
+                         seat,
+                         isMine,
+                         isPurchased,
+                         isHeld,
+                         onSelect,
+                         checkingSeatId,
+                         isVIP
                      }: SeatProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const isChecking = checkingSeatId === seat.id
+    const [isOpen, setIsOpen] = useState(false)
+    const isChecking = checkingSeatId === seat.id
 
-  // Определяем состояние места
-  const getSeatStatus = () => {
-    if (isPurchased) return "purchased"
-    if (isSelected) return "selected"
-    if (isOccupiedByOthers) return "occupied"
-    if (isHeldByOthers) return "held"
-    return "available"
-  }
-
-  const seatStatus = getSeatStatus()
-
-  // Цвета для разных состояний
-  const statusColor = {
-    available: isVIP ? "text-purple-400 hover:text-purple-300" : "text-slate-400 hover:text-slate-200",
-    held: "text-red-400", // Места, удерживаемые другими (красный)
-    occupied: "text-emerald-400", // Купленные другими
-    selected: "text-yellow-300", // Мои выбранные места
-    purchased: "text-emerald-300", // Места, купленные мной
-  }
-
-  const bgStatus = {
-    available: isVIP
-        ? "bg-purple-900/20 hover:bg-purple-800/40 border-purple-700/30"
-        : "bg-slate-800/40 hover:bg-slate-700/60 border-slate-700/30",
-    held: "bg-red-900/30 border border-red-700/50", // Красный для удерживаемых другими
-    occupied: "bg-emerald-900/30 border border-emerald-700/50",
-    selected: "bg-yellow-500/30 border border-yellow-400/50 animate-pulse",
-    purchased: "bg-emerald-900/40 border border-emerald-600/50", // Зеленый для купленных мной
-  }
-
-  const handleClick = () => {
-    // Открываем попап только для доступных мест
-    if (seatStatus === "available") {
-      setIsOpen(true)
+    // Определяем состояние места
+    const getSeatState = () => {
+        if (isPurchased && isMine) return "purchased-by-me" // Куплено мной - зеленый
+        if (isMine) return "my-selection" // В моей корзине - желтый
+        if (isPurchased || isHeld) return "unavailable" // Куплено/забронировано другими - красный
+        return isVIP ? "available-vip" : "available" // Доступно
     }
-  }
 
-  const handleAddToCart = () => {
-    onSelect(seat)
-    setIsOpen(false)
-  }
+    const seatState = getSeatState()
 
-  // Разрешаем клик только для доступных мест
-  const isClickable = seatStatus === "available"
+    // Стили для каждого состояния
+    const getStyles = () => {
+        switch (seatState) {
+            case "purchased-by-me":
+                return {
+                    text: "text-emerald-300",
+                    bg: "bg-emerald-900/40 border-emerald-700",
+                    cursor: "cursor-default"
+                }
+            case "my-selection":
+                return {
+                    text: "text-yellow-300",
+                    bg: "bg-yellow-500/30 border-yellow-400 animate-pulse",
+                    cursor: "cursor-pointer hover:bg-yellow-500/40"
+                }
+            case "unavailable":
+                return {
+                    text: "text-red-300",
+                    bg: "bg-red-900/30 border-red-700",
+                    cursor: "cursor-default"
+                }
+            case "available-vip":
+                return {
+                    text: "text-purple-300 hover:text-purple-200",
+                    bg: "bg-purple-900/20 border-purple-700 hover:bg-purple-800/30",
+                    cursor: "cursor-pointer"
+                }
+            default: // available
+                return {
+                    text: "text-slate-300 hover:text-slate-100",
+                    bg: "bg-slate-800/40 border-slate-700 hover:bg-slate-700/50",
+                    cursor: "cursor-pointer"
+                }
+        }
+    }
 
-  return (
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <motion.button
-              whileHover={isClickable ? { scale: 1.1 } : {}}
-              whileTap={isClickable ? { scale: 0.95 } : {}}
-              onClick={handleClick}
-              className={cn(
-                  "relative w-8 h-8 sm:w-10 sm:h-10 rounded-t-lg rounded-b-sm flex items-center justify-center transition-all duration-300 border",
-                  statusColor[seatStatus],
-                  bgStatus[seatStatus],
-                  isClickable && "cursor-pointer",
-                  !isClickable && "cursor-default",
-                  "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
-              )}
-              disabled={!isClickable}
-              data-testid={`seat-${seat.id}`}
-          >
-            {isChecking ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-                <Armchair className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
-            )}
+    const styles = getStyles()
+    const isAvailable = seatState === "available" || seatState === "available-vip" || seatState === "my-selection"
 
-            <span className="absolute -bottom-4 text-[9px] text-muted-foreground/50 font-mono">
+    const handleClick = () => {
+        if (!isAvailable) return
+        if (seatState === "my-selection") {
+            // Если место уже у меня в корзине, сразу убираем
+            onSelect(seat)
+            setIsOpen(false)
+        } else {
+            // Если доступно, открываем попап
+            setIsOpen(true)
+        }
+    }
+
+    const handleAddToCart = () => {
+        onSelect(seat)
+        setIsOpen(false)
+    }
+
+    return (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger asChild>
+                <motion.button
+                    whileHover={isAvailable ? { scale: 1.1 } : {}}
+                    whileTap={isAvailable ? { scale: 0.95 } : {}}
+                    onClick={handleClick}
+                    className={cn(
+                        "relative w-8 h-8 sm:w-10 sm:h-10 rounded-t-lg rounded-b-sm flex items-center justify-center transition-all duration-200 border",
+                        styles.text,
+                        styles.bg,
+                        styles.cursor,
+                        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+                    )}
+                    disabled={!isAvailable}
+                    data-testid={`seat-${seat.id}`}
+                >
+                    {isChecking ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <Armchair className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.5} />
+                    )}
+
+                    {/* Номер места (ряд-колонка) */}
+                    <span className="absolute -bottom-4 text-[9px] text-muted-foreground/60 font-mono">
             {seat.row}-{seat.col}
           </span>
-          </motion.button>
-        </PopoverTrigger>
+                </motion.button>
+            </PopoverTrigger>
 
-        <PopoverContent className="w-48 bg-card/95 backdrop-blur border-primary/20 p-3 shadow-xl shadow-primary/10">
-          <div className="space-y-2">
-            <h4 className="font-display font-bold text-lg leading-none">
-              Row {seat.row} <span className="text-muted-foreground text-xs font-sans font-normal">Seat {seat.col}</span>
-            </h4>
+            <PopoverContent className="w-48 bg-card/95 backdrop-blur border-primary/20 p-3 shadow-xl shadow-primary/10">
+                <div className="space-y-2">
+                    <h4 className="font-display font-bold text-lg leading-none">
+                        Row {seat.row} <span className="text-muted-foreground text-xs font-sans font-normal">Seat {seat.col}</span>
+                    </h4>
 
-            {seatStatus === "occupied" ? (
-                <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
-                  Purchased by <span className="font-bold">{seat.occupied_by || "Another User"}</span>
+                    {seatState === "unavailable" ? (
+                        <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
+                            {isPurchased ? "Purchased" : "Temporarily reserved"}
+                        </div>
+                    ) : seatState === "purchased-by-me" ? (
+                        <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
+                            Purchased by <span className="font-bold">You</span>
+                        </div>
+                    ) : seatState === "my-selection" ? (
+                        <>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground capitalize">{seat.type}</span>
+                                <span className="font-bold text-primary">${seat.price}</span>
+                            </div>
+                            <div className="bg-yellow-950/30 border border-yellow-900/50 rounded p-2 text-xs text-yellow-200 mb-2">
+                                In your cart
+                            </div>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="w-full font-bold tracking-wide"
+                                onClick={handleAddToCart}
+                                disabled={isChecking}
+                            >
+                                REMOVE FROM CART
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground capitalize">{seat.type}</span>
+                                <span className="font-bold text-primary">${seat.price}</span>
+                            </div>
+                            <Button
+                                size="sm"
+                                className="w-full mt-2 font-bold tracking-wide"
+                                onClick={handleAddToCart}
+                                disabled={isChecking}
+                            >
+                                ADD TO CART
+                            </Button>
+                        </>
+                    )}
                 </div>
-            ) : seatStatus === "held" ? (
-                <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
-                  Temporarily held by another user
-                </div>
-            ) : seatStatus === "purchased" ? (
-                <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
-                  Purchased by <span className="font-bold">You</span>
-                </div>
-            ) : (
-                <>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground capitalize">{seat.type}</span>
-                    <span className="font-bold text-primary">${seat.price}</span>
-                  </div>
-                  <Button
-                      size="sm"
-                      className="w-full mt-2 font-bold tracking-wide"
-                      onClick={handleAddToCart}
-                      disabled={isChecking}
-                      data-testid={`button-add-seat-${seat.id}`}
-                  >
-                    ADD TO CART
-                  </Button>
-                </>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-  )
+            </PopoverContent>
+        </Popover>
+    )
 }
