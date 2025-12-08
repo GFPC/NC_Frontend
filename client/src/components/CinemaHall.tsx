@@ -24,7 +24,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
 
   return (
       <div className="w-full h-full flex items-center justify-center overflow-hidden touch-none relative">
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 text-[10px] text-muted-foreground/50 uppercase tracking-widest pointer-events-none">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 text-[10px] text-muted-foreground/100 uppercase tracking-widest pointer-events-none">
           Pinch to Zoom • Drag to Pan
         </div>
 
