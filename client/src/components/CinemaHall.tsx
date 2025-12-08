@@ -47,6 +47,7 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                     <div key={row} className="flex gap-1 sm:gap-2 md:gap-3 justify-center">
                       {seatsByRow[row].map((seat) => {
                         // Простая логика определения состояния
+                        console.log(seat)
                         const isInMyCart = seat.occupied_by === userId
                         const isBookedByMe = seat.held_by === userId
 
