@@ -21,6 +21,7 @@ export default function Home() {
   const [checkingSeatId, setCheckingSeatId] = useState<string | null>(null)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [userId, setUserId] = useState<string>("")
+  const [name, setName] = useState<string>("")
   const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false) // Track minimum loading time
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false) // Track if name dialog should show
 
@@ -35,6 +36,8 @@ export default function Home() {
     const storedName = localStorage.getItem("cinema_user_name")
     if (!storedName) {
       setIsNameDialogOpen(true)
+    } else {
+      setName(storedName)
     }
 
     document.body.style.overflow = "hidden"
@@ -131,11 +134,11 @@ export default function Home() {
     reserveMutation.mutate(seat.id)
   }
 
-  const handleCheckout = (name: string) => {
+  const handleCheckout = () => {
     bookMutation.mutate({
       userId,
       seatIds: mySelectedSeatIds,
-      name,
+      name: name,
     })
   }
 
@@ -184,7 +187,7 @@ export default function Home() {
         <Cart
           selectedSeats={mySelectedSeats}
           onRemove={(id) => releaseMutation.mutate(id)}
-          onCheckout={() => setIsCheckoutOpen(true)}
+          onCheckout={() => {handleCheckout()}}
         />
       </div>
 

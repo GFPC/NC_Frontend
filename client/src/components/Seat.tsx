@@ -136,7 +136,8 @@ export function Seat({
 
                     {seatState === "unavailable" ? (
                         <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
-                            {isPurchased ? `Purchased by ${seat.name ? seat.name : "Someone"}` : `Temporarily reserved by ${seat.name ? seat.name : "Someone"}`}
+                            {isHeld ? `Temporarily reserved by ${seat.name ? seat.name : "Someone"}` : ''}
+                            {isPurchased ? `Purchased by ${seat.name ? seat.name : "Someone"}` : ''}
                         </div>
                     ) : seatState === "purchased-by-me" ? (
                         <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">

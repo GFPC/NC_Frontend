@@ -63,30 +63,7 @@ app.use((req, res, next) => {
 // Start FastAPI backend as a child process
 let fastapiProcess: ReturnType<typeof spawn> | null = null;
 
-function startFastAPI() {
-  log("Starting FastAPI backend...", "fastapi");
-  
-  fastapiProcess = spawn("python3", ["-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"], {
-    stdio: "pipe",
-    detached: false,
-  });
 
-  fastapiProcess.stdout?.on("data", (data) => {
-    log(data.toString().trim(), "fastapi");
-  });
-
-  fastapiProcess.stderr?.on("data", (data) => {
-    log(data.toString().trim(), "fastapi");
-  });
-
-  fastapiProcess.on("error", (error) => {
-    log(`FastAPI error: ${error.message}`, "fastapi");
-  });
-
-  fastapiProcess.on("exit", (code) => {
-    log(`FastAPI exited with code ${code}`, "fastapi");
-  });
-}
 
 // Cleanup on exit
 process.on("SIGTERM", () => {
@@ -105,7 +82,6 @@ process.on("SIGINT", () => {
 
 (async () => {
   // Start FastAPI first
-  startFastAPI();
   
   // Wait a bit for FastAPI to initialize
   await new Promise(resolve => setTimeout(resolve, 3000));

@@ -48,11 +48,11 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                       {seatsByRow[row].map((seat) => {
                         // Простая логика определения состояния
                         console.log(seat)
-                        const isInMyCart = seat.occupied_by === userId || selectedSeats.includes(seat.id)
-                        const isBookedByMe = seat.held_by === userId || seat.occupied_by === userId
+                        const isInMyCart = seat.held_by === userId || seat.held_by?.includes(userId)
+                        const isBookedByMe = seat.occupied_by === userId || seat.occupied_by?.includes(userId)
 
-                        const isPurchased = seat.status === "occupied"
-                        const isHeld = seat.status === "held"
+                        const isPurchased = seat.status === "occupied" &&seat.occupied_by !== userId && !seat.occupied_by?.includes(userId)
+                        const isHeld = seat.status === "occupied" &&seat.held_by !== userId && !seat.held_by?.includes(userId) && !seat.occupied_by
 
                         console.log(isInMyCart, isBookedByMe, isPurchased, isHeld)
 
@@ -60,8 +60,8 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                             <Seat
                                 key={seat.id}
                                 seat={seat}
-                                isInMyCart={isInMyCart}
-                                isBookedByMe={isBookedByMe}
+                                isInMyCart={isInMyCart || false}
+                                isBookedByMe={isBookedByMe || false}
                                 isPurchased={isPurchased}
                                 isHeld={isHeld}
                                 onSelect={onToggleSeat}
