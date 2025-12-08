@@ -15,25 +15,32 @@ interface SeatProps {
   onSelect: (seat: SeatType) => void
   isChecking: boolean
   userId: string
+  isVIP?: boolean
 }
 
-export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, userId }: SeatProps) {
+export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, userId, isVIP }: SeatProps) {
   const [isOpen, setIsOpen] = useState(false)
 
+  // Если место занято другими (куплено или забронировано не мной)
+  const isOccupiedByOthers = (seat.status === "occupied" || seat.status === "held") && seat.held_by !== userId
+
   const statusColor = {
-    available: seat.type === "vip" ? "text-purple-400 hover:text-purple-300" : "text-slate-400 hover:text-slate-200",
-    occupied: "text-emerald-400", // Purchased/occupied seats are now green
-    selected: "text-yellow-300 animate-pulse", // Changed from primary to yellow for "My" seats
+    available: isVIP ? "text-purple-400 hover:text-purple-300" : "text-slate-400 hover:text-slate-200",
+    occupied: "text-red-400", // Изменено на красный для занятых мест другими
+    selected: "text-yellow-300 animate-pulse",
   }
 
   const bgStatus = {
-    available:
-      seat.type === "vip" ? "bg-purple-900/20 hover:bg-purple-800/40" : "bg-slate-800/40 hover:bg-slate-700/60",
-    occupied: "bg-emerald-900/30 border border-emerald-700/50", // Green for purchased seats
-    selected: "bg-yellow-500/30 border border-yellow-400/50", // Changed to yellow background
+    available: isVIP ? "bg-purple-900/20 hover:bg-purple-800/40" : "bg-slate-800/40 hover:bg-slate-700/60",
+    occupied: "bg-red-900/30 border border-red-700/50", // Изменено на красный фон
+    selected: "bg-yellow-500/30 border border-yellow-400/50",
   }
 
   const handleClick = () => {
+    if (isOccupiedByOthers) {
+      return // Ничего не делаем для занятых мест
+    }
+    
     if (isSelected) {
       onSelect(seat)
       setIsOpen(false)
@@ -43,14 +50,21 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, u
   }
 
   const handleAddToCart = () => {
+    if (isOccupiedByOthers) {
+      return // Защита на случай, если popover все равно открылся
+    }
     onSelect(seat)
     setIsOpen(false)
   }
 
-  const isOccupiedByOthers = seat.status === "occupied" && seat.held_by !== userId
-
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover 
+      open={isOpen && !isOccupiedByOthers} 
+      onOpenChange={(open) => {
+        if (isOccupiedByOthers) return // Не открываем для занятых мест
+        setIsOpen(open)
+      }}
+    >
       <PopoverTrigger asChild>
         <motion.button
           whileHover={!isOccupiedByOthers ? { scale: 1.1 } : {}}
@@ -58,11 +72,15 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, u
           onClick={handleClick}
           className={cn(
             "relative w-8 h-8 sm:w-10 sm:h-10 rounded-t-lg rounded-b-sm flex items-center justify-center transition-all duration-300 border",
+            "cursor-pointer",
+            isOccupiedByOthers ? "cursor-not-allowed" : "cursor-pointer",
             isSelected ? statusColor.selected : isOccupiedByOthers ? statusColor.occupied : statusColor.available,
             isSelected ? bgStatus.selected : isOccupiedByOthers ? bgStatus.occupied : bgStatus.available,
             "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
+            isOccupiedByOthers && "opacity-90"
           )}
           data-testid={`seat-${seat.id}`}
+          disabled={isOccupiedByOthers}
         >
           {isChecking ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -83,8 +101,9 @@ export function Seat({ seat, isSelected, isHeldByOthers, onSelect, isChecking, u
           </h4>
 
           {isOccupiedByOthers ? (
-            <div className="bg-emerald-950/50 border border-emerald-900/50 rounded p-2 text-xs text-emerald-200">
-              Purchased by <span className="font-bold">{seat.occupied_by || "Another User"}</span>
+            <div className="bg-red-950/50 border border-red-900/50 rounded p-2 text-xs text-red-200">
+              {seat.status === "occupied" ? "Purchased" : "Reserved"} by{" "}
+              <span className="font-bold">{seat.occupied_by || "Another User"}</span>
             </div>
           ) : (
             <>
