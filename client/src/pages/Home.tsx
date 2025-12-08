@@ -47,7 +47,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    const timer = setTimeout(() => setMinLoadingTimeElapsed(true), 2000)
+    const timer = setTimeout(() => setMinLoadingTimeElapsed(true), 3000)
     return () => clearTimeout(timer)
   }, [])
 
