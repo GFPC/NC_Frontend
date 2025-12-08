@@ -72,11 +72,11 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center mt-8 sm:mt-12 text-xs">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-slate-800/40 border border-slate-700"></div>
-                  <span>Available</span>
+                  <span>Regular Available</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-purple-900/30 border border-purple-700"></div>
-                  <span>VIP</span>
+                  <span>VIP Available</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-yellow-500/30 border border-yellow-400 animate-pulse"></div>
