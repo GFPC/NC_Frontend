@@ -321,7 +321,7 @@ export function LoadingScreen() {
                         repeat: Number.POSITIVE_INFINITY,
                     }}
                 >
-                    v18.2
+                    v0.2 latest
                 </motion.div>
             </div>
         </div>
