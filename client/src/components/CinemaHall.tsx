@@ -84,12 +84,12 @@ export function CinemaHall({ seats, selectedSeats, onToggleSeat, checkingSeatId,
                 <span>My Seats</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-emerald-900/30 border border-emerald-700/50"></div>
-                <span>Purchased</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-red-900/30 border border-red-700/50"></div>
                 <span>Occupied</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-emerald-900/30 border border-emerald-700/50"></div>
+                <span>Purchased</span>
               </div>
             </div>
           </div>
