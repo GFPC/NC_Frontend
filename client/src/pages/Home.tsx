@@ -188,16 +188,10 @@ export default function Home() {
           selectedSeats={mySelectedSeats}
           onRemove={(id) => releaseMutation.mutate(id)}
           onCheckout={() => {handleCheckout()}}
+          isCheckingOut={bookMutation.isPending}
         />
       </div>
 
-      <CheckoutDialog
-        open={isCheckoutOpen}
-        onOpenChange={setIsCheckoutOpen}
-        onSubmit={handleCheckout}
-        isProcessing={bookMutation.isPending}
-        totalAmount={mySelectedSeats.reduce((sum, s) => sum + s.price, 0)}
-      />
 
       <NameDialog open={isNameDialogOpen} onSubmit={handleNameSubmit} />
     </div>
